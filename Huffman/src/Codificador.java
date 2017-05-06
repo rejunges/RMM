@@ -44,6 +44,12 @@ public class Codificador {
         gravaArquivoProbabilidade();
         raiz = arvoreHuffman.geraArvore();
         geraCodigoCaracteres(raiz);
+        for(char c: tabelaComprimento.keySet()){
+            System.out.println("COMPRIMENTO DO CHAR " + c + ": " + tabelaComprimento.get(c));
+        }
+        for(char c: tabelaCodigo.keySet()){
+            System.out.println("CODIGO DO CHAR " + c + ": " + tabelaCodigo.get(c));
+        }
         
     }
     
@@ -123,17 +129,18 @@ public class Codificador {
         
         else{
             //Chegou na folha
-            Stack <Boolean> pilhaCodigo = pbits;
+            Stack <Boolean> pilhaCodigo = new Stack<>();
+            pilhaCodigo = (Stack<Boolean>) pbits.clone();
             String codigo = "";
             int comprimento = 0;
             
             while(!pilhaCodigo.isEmpty()){
             
                 if(pilhaCodigo.pop() == true){
-                    codigo.concat("1");
+                    codigo = codigo + "1";
                 }
                 else{
-                    codigo.concat("0");
+                    codigo = codigo + "0";
                 }
                 comprimento++;
                 
@@ -141,15 +148,7 @@ public class Codificador {
             
             tabelaCodigo.put(raiz.nome.charAt(0), codigo);
             tabelaComprimento.put(raiz.nome.charAt(0), comprimento);    
-   
-            
-        }
-        
-        for(char c: tabelaComprimento.keySet()){
-            System.out.println("COMPRIMENTO DO CHAR " + c + ": " + tabelaComprimento.get(c));
-        }
-        for(char c: tabelaCodigo.keySet()){
-            System.out.println("CODIGO DO CHAR " + c + ": " + tabelaCodigo.get(c));
+
         }
         
     }
