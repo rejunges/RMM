@@ -51,15 +51,34 @@ public class ArvoresHuffman {
                 //printFilaNodos();   ----DEBUG       
         }
         
-       /* ---DEBUG ---
-        while (nodo.esquerdo != null){
-            Nodo esquerdo = nodo.esquerdo;
-            System.out.println(esquerdo.nome + " " + esquerdo.probabilidade);
-            nodo = esquerdo;
-            
-        }*/
+       /* ---DEBUG ---*/
+       leArvore(nodo);
        
         return nodo; //Vai ser sempre a raiz
+        
+    }
+    
+    private void leArvore(Nodo nodo){
+        
+         
+        System.out.println("\nNodo: " + nodo.nome);
+        if (nodo.pai != null){
+            System.out.println("Pai: " + nodo.pai.nome);
+        }
+        if (nodo.esquerdo != null){
+            System.out.println("Esquerdo: " + nodo.esquerdo.nome);
+        }
+        if (nodo.direito != null){
+            System.out.println("Direito: " + nodo.direito.nome);
+        }
+        if (nodo.esquerdo != null){
+            leArvore(nodo.esquerdo);
+        }
+        if(nodo.direito != null){
+            leArvore(nodo.direito);
+        }        
+        
+        
         
     }
     
