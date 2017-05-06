@@ -51,24 +51,26 @@ public class ArvoresHuffman {
                 //printFilaNodos();   ----DEBUG       
         }
         
+       /* ---DEBUG ---
         while (nodo.esquerdo != null){
             Nodo esquerdo = nodo.esquerdo;
             System.out.println(esquerdo.nome + " " + esquerdo.probabilidade);
             nodo = esquerdo;
             
-        }
-        return nodo;
+        }*/
+       
+        return nodo; //Vai ser sempre a raiz
         
     }
     
-    //---DEBUG---
+    /*---DEBUG---
     private void printFilaNodos(){
         System.out.println();
         for(Nodo nodo : filaNodos){
             System.out.println(nodo.nome + " " + nodo.probabilidade);
         }
     }
-    //---FIM DEBUG---
+    */
     
     private void geraFilaNodos(){
         

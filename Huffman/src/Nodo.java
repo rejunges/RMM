@@ -21,14 +21,6 @@ public class Nodo {
         this.pai = null;
     }
     
-    public void adicionaNome(String nome){
-        this.nome = nome;
-    }
-    
-    public void adicionaProbabilidade(Float probabilidade ){
-        this.probabilidade = probabilidade;
-    }
-    
     public void adicionaEsquerdo(Nodo esquerdo){
         this.esquerdo = esquerdo;
     }

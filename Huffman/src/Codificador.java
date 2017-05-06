@@ -27,12 +27,12 @@ public class Codificador {
     }
     
     public void codifica(File entrada) throws IOException{
-        Nodo huffman;
+        Nodo raiz;
         
         geraTabelaOcorrencia(entrada);
         geraTabelaProbabilidade();
         gravaArquivoProbabilidade();
-        huffman = arvoreHuffman.geraArvore();
+        raiz = arvoreHuffman.geraArvore();
         
     }
     
