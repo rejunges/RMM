@@ -34,7 +34,7 @@ public class Codificador {
         geraTabelaOcorrencia(entrada);
         geraTabelaProbabilidade();
         gravaArquivoProbabilidade();
-        geraListaNodos();
+        geraFilaNodos();
         
     }
     
