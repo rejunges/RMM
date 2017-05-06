@@ -2,7 +2,9 @@
 import java.util.HashMap;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 /**
  *
@@ -14,14 +16,16 @@ public class Codificador {
     
     HashMap<Character, Integer> tabelaOcorrencias;
     HashMap<Character, Float> tabelaProbabilidades;
-    ArrayList<Nodo> listaNodos;
+    PriorityQueue<Nodo> filaNodos;
+    Comparator<Nodo> comparadorNodos;
     Nodo raiz;
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
         tabelaOcorrencias = new HashMap<>();
         tabelaProbabilidades = new HashMap<>();
-        listaNodos = new ArrayList<>();
+        comparadorNodos = new ComparadorProbabilidades();
+        filaNodos = new PriorityQueue<>(25, comparadorNodos);
         tamanhoEntrada = 0;
     }
     
@@ -96,11 +100,11 @@ public class Codificador {
         informacoes.close();
     }
     
-    public void geraListaNodos(){
+    public void geraFilaNodos(){
         
         for(char c: tabelaProbabilidades.keySet()){
             Nodo nodo = new Nodo(String.valueOf(c), tabelaProbabilidades.get(c));
-            listaNodos.add(nodo);
+            filaNodos.add(nodo);
             //System.out.println("NOME DA STRING INSERIDA NO NODO: " + nodo.nome); ---DEBUG---      
         }
    
@@ -113,6 +117,5 @@ public class Codificador {
         codificador.codifica(entrada);
 
     }
-
-    
+   
 }
