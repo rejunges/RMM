@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Stack;
 
 /**
  *
@@ -18,6 +19,7 @@ public class Codificador {
     HashMap<Character, Float> tabelaProbabilidades;
     ArvoresHuffman arvoreHuffman;
     String arquivoEntrada;
+    Stack <Character> pbits;
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
@@ -25,6 +27,7 @@ public class Codificador {
         tabelaProbabilidades = new HashMap<>();
         tamanhoEntrada = 0;
         arquivoEntrada = "";
+        pbits = new Stack<Character>();
         arvoreHuffman = new ArvoresHuffman(tabelaProbabilidades);
     }
     
@@ -103,6 +106,33 @@ public class Codificador {
     }
     
     public void geraCodigoCaracteres(Nodo raiz){
+        Stack <Character> pilhaCodigo;
+        int codigo;
+        int comprimento;
+        
+        if (raiz.esquerdo != null || raiz.direito != null){
+            pbits.push('0');
+            geraCodigoCaracteres(raiz.esquerdo);
+            pbits.pop();
+            pbits.push('1');
+            geraCodigoCaracteres(raiz.direito);
+            pbits.pop();
+        }
+        else{
+            //Chegou na folha
+            pilhaCodigo = pbits;
+            codigo = 0;
+            comprimento = 0;
+            
+            while(!pilhaCodigo.isEmpty()){
+            
+                codigo = codigo | pilhaCodigo.pop(); //Nao tenho certeza se é assim
+                comprimento += 1;
+                
+            }
+            
+        }
+        
         
     }
     
