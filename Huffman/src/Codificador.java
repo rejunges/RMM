@@ -19,7 +19,7 @@ public class Codificador {
     HashMap<Character, Float> tabelaProbabilidades;
     ArvoresHuffman arvoreHuffman;
     String arquivoEntrada;
-    Stack <Character> pbits;
+    Stack <Boolean> pbits;
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
@@ -27,7 +27,7 @@ public class Codificador {
         tabelaProbabilidades = new HashMap<>();
         tamanhoEntrada = 0;
         arquivoEntrada = "";
-        pbits = new Stack<Character>();
+        pbits = new Stack<Boolean>();
         arvoreHuffman = new ArvoresHuffman(tabelaProbabilidades);
     }
     
@@ -106,30 +106,33 @@ public class Codificador {
     }
     
     public void geraCodigoCaracteres(Nodo raiz){
-        Stack <Character> pilhaCodigo;
-        int codigo;
-        int comprimento;
+        Stack <Boolean> pilhaCodigo;
+        boolean codigo[] = null;
+        int comprimento[] = null;
         
         if (raiz.esquerdo != null || raiz.direito != null){
-            pbits.push('0');
+            pbits.push(false);
             geraCodigoCaracteres(raiz.esquerdo);
             pbits.pop();
-            pbits.push('1');
+            pbits.push(true);
             geraCodigoCaracteres(raiz.direito);
             pbits.pop();
         }
         else{
             //Chegou na folha
             pilhaCodigo = pbits;
-            codigo = 0;
-            comprimento = 0;
+            codigo[0] = false;
+            comprimento[0] = 0;
+            int i = 0;
             
             while(!pilhaCodigo.isEmpty()){
             
-                codigo = codigo | pilhaCodigo.pop(); //Nao tenho certeza se é assim
-                comprimento += 1;
+                codigo[i] = codigo[i] | pilhaCodigo.pop(); //Nao tenho certeza se é assim
+                comprimento[i] += 1;
+                i++;
                 
             }
+   
             
         }
         
