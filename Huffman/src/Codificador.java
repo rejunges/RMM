@@ -17,12 +17,14 @@ public class Codificador {
     HashMap<Character, Integer> tabelaOcorrencias;
     HashMap<Character, Float> tabelaProbabilidades;
     ArvoresHuffman arvoreHuffman;
+    String arquivoEntrada;
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
         tabelaOcorrencias = new HashMap<>();
         tabelaProbabilidades = new HashMap<>();
         tamanhoEntrada = 0;
+        arquivoEntrada = "";
         arvoreHuffman = new ArvoresHuffman(tabelaProbabilidades);
     }
     
@@ -33,6 +35,7 @@ public class Codificador {
         geraTabelaProbabilidade();
         gravaArquivoProbabilidade();
         raiz = arvoreHuffman.geraArvore();
+        geraCodigoCaracteres(raiz);
         
     }
     
@@ -46,6 +49,7 @@ public class Codificador {
             
             tamanhoEntrada++;
             c = (char) valorChar;
+            arquivoEntrada += c;
             if(tabelaOcorrencias.containsKey(c)){
                 tabelaOcorrencias.put(c, tabelaOcorrencias.get(c)+1); //incrementa quando acha o caractere
             }
@@ -96,6 +100,10 @@ public class Codificador {
         
         informacoes.flush();
         informacoes.close();
+    }
+    
+    public void geraCodigoCaracteres(Nodo raiz){
+        
     }
     
     public static void main(String[] args) throws IOException{
