@@ -44,12 +44,14 @@ public class Codificador {
         gravaArquivoProbabilidade();
         raiz = arvoreHuffman.geraArvore();
         geraCodigoCaracteres(raiz);
+        /*---DEBUG---
         for(char c: tabelaComprimento.keySet()){
             System.out.println("COMPRIMENTO DO CHAR " + c + ": " + tabelaComprimento.get(c));
         }
         for(char c: tabelaCodigo.keySet()){
             System.out.println("CODIGO DO CHAR " + c + ": " + tabelaCodigo.get(c));
-        }
+        }*/
+        gravaArquivoCodificado();
         
     }
     
@@ -114,6 +116,23 @@ public class Codificador {
         
         informacoes.flush();
         informacoes.close();
+    }
+    
+    public void gravaArquivoCodificado() throws IOException{
+        
+        File arquivo = new File ("saidacodificada.dat");
+        DataOutputStream escreve = new DataOutputStream(new FileOutputStream(arquivo));
+        
+        for(char c : arquivoEntrada.toCharArray()){
+            for(int i = 0; i < tabelaComprimento.get(c); i++){
+                if(tabelaCodigo.get(c).charAt(i) == '0') escreve.writeBoolean(false);
+                else escreve.writeBoolean(true);
+            }
+        }
+        
+        escreve.flush();
+        escreve.close();
+        
     }
     
     public void geraCodigoCaracteres(Nodo raiz){
