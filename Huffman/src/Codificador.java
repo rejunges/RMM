@@ -16,6 +16,8 @@ import java.util.Stack;
 
 public class Codificador {
     
+    private static int bufferBit;   
+    private static int n;
     HashMap<Character, Integer> tabelaOcorrencias;
     HashMap<Character, Float> tabelaProbabilidades;
     HashMap<Character, String> tabelaCodigo;
@@ -125,14 +127,38 @@ public class Codificador {
         
         for(char c : arquivoEntrada.toCharArray()){
             for(int i = 0; i < tabelaComprimento.get(c); i++){
-                if(tabelaCodigo.get(c).charAt(i) == '0') escreve.writeBoolean(false);
-                else escreve.writeBoolean(true);
+                if(tabelaCodigo.get(c).charAt(i) == '0') escreveBit(false, escreve);
+                else escreveBit(true, escreve);
             }
         }
-        
+        limpaBuffer(escreve);
         escreve.flush();
         escreve.close();
         
+    }
+    
+    public void escreveBit(boolean bit, DataOutputStream escreve){
+        bufferBit <<= 1;
+       
+        if(bit) bufferBit |= 1;
+        
+        n++;
+        if(n == 8) limpaBuffer(escreve);
+           
+    }
+    
+    private static void limpaBuffer(DataOutputStream escreve){
+        
+        if (n == 0) return;
+        if (n > 0) bufferBit <<= (8 - n);
+        try {
+            escreve.write(bufferBit);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        n = 0;
+        bufferBit = 0;
     }
     
     public void geraCodigoCaracteres(Nodo raiz){
