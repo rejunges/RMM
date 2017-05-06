@@ -16,25 +16,23 @@ public class Codificador {
     
     HashMap<Character, Integer> tabelaOcorrencias;
     HashMap<Character, Float> tabelaProbabilidades;
-    PriorityQueue<Nodo> filaNodos;
-    Comparator<Nodo> comparadorNodos;
-    Nodo raiz;
+    ArvoresHuffman arvoreHuffman;
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
         tabelaOcorrencias = new HashMap<>();
         tabelaProbabilidades = new HashMap<>();
-        comparadorNodos = new ComparadorProbabilidades();
-        filaNodos = new PriorityQueue<>(25, comparadorNodos);
         tamanhoEntrada = 0;
+        arvoreHuffman = new ArvoresHuffman(tabelaProbabilidades);
     }
     
     public void codifica(File entrada) throws IOException{
+        Nodo huffman;
         
         geraTabelaOcorrencia(entrada);
         geraTabelaProbabilidade();
         gravaArquivoProbabilidade();
-        geraFilaNodos();
+        huffman = arvoreHuffman.geraArvore();
         
     }
     
@@ -98,16 +96,6 @@ public class Codificador {
         
         informacoes.flush();
         informacoes.close();
-    }
-    
-    public void geraFilaNodos(){
-        
-        for(char c: tabelaProbabilidades.keySet()){
-            Nodo nodo = new Nodo(String.valueOf(c), tabelaProbabilidades.get(c));
-            filaNodos.add(nodo);
-            //System.out.println("NOME DA STRING INSERIDA NO NODO: " + nodo.nome); ---DEBUG---      
-        }
-   
     }
     
     public static void main(String[] args) throws IOException{
