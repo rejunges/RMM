@@ -13,10 +13,11 @@ public class Codificador {
     HashMap<Character, Integer> tabelaOcorrencias;
     HashMap<Character, Float> tabelaProbabilidades;
     Nodo raiz;
-    int tamanhoEntrada;
+    int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
         tabelaOcorrencias = new HashMap<>();
+        tabelaProbabilidades = new HashMap<>();
         tamanhoEntrada = 0;
     }
     
@@ -28,7 +29,7 @@ public class Codificador {
         
         while((valorChar = leitor.read()) != -1){ //pega o valor int (ascii) de cada caractere
             
-            tamanhoEntrada = tamanhoEntrada + 1;
+            tamanhoEntrada++;
             c = (char) valorChar;
             if(tabelaOcorrencias.containsKey(c)){
                 tabelaOcorrencias.put(c, tabelaOcorrencias.get(c)+1); //incrementa quando acha o caractere
@@ -38,23 +39,44 @@ public class Codificador {
             }
        
         }
+        
+        /* ---DEBUG---
+        System.out.println("Tabela de ocorrencias: \n");
+        for(char carac: tabelaOcorrencias.keySet()){
+            System.out.println(carac + ": " + tabelaOcorrencias.get(carac).toString());
+        }*/
+
     }
     
     public void geraTabelaProbabilidade(){
-        int ocorrencia = 0;
+        
+        int ocorrencia;
         float probabilidade = 0;
         
-        for (Character letra : tabelaOcorrencias.keySet()){
+        for (char letra : tabelaOcorrencias.keySet()){
             
             ocorrencia = tabelaOcorrencias.get(letra);
-            probabilidade = (ocorrencia*100)/tamanhoEntrada ;
+            probabilidade = (float) (ocorrencia*100)/tamanhoEntrada ;
             tabelaProbabilidades.put(letra, probabilidade);
        
         } 
         
+        /* ---DEBUG---
+        System.out.println("Tabela de probabilidades: \n");
+        for(char carac: tabelaProbabilidades.keySet()){
+            System.out.println(carac + ": " + Float.toString(tabelaProbabilidades.get(carac)));
+        }*/
+        
     }
     
+    public static void main(String[] args) throws IOException{
+        
+        Codificador codificador = new Codificador();
+        File entrada = new File("entrada.txt");
+        codificador.geraTabelaOcorrencia(entrada);
+        codificador.geraTabelaProbabilidade();
     
-    
+    }
+
     
 }
