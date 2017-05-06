@@ -29,6 +29,7 @@ public class Codificador {
         
         geraTabelaOcorrencia(entrada);
         geraTabelaProbabilidade();
+        gravaArquivoProbabilidade();
         geraListaNodos();
         
     }
@@ -79,6 +80,20 @@ public class Codificador {
             System.out.println(carac + ": " + Float.toString(tabelaProbabilidades.get(carac)));
         }*/
         
+    }
+    
+    public void gravaArquivoProbabilidade() throws IOException{
+        
+        File arquivo = new File("probabilidade.txt");
+        BufferedWriter informacoes = new BufferedWriter(new FileWriter(arquivo));
+        
+        for (char letra : tabelaProbabilidades.keySet()){
+            informacoes.write(letra + " " + Float.toString(tabelaProbabilidades.get(letra)));
+            informacoes.newLine();
+        }
+        
+        informacoes.flush();
+        informacoes.close();
     }
     
     public void geraListaNodos(){
