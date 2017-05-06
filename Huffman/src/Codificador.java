@@ -1,6 +1,8 @@
 
 import java.util.HashMap;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -12,12 +14,14 @@ public class Codificador {
     
     HashMap<Character, Integer> tabelaOcorrencias;
     HashMap<Character, Float> tabelaProbabilidades;
+    ArrayList<Nodo> listaNodos;
     Nodo raiz;
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
         tabelaOcorrencias = new HashMap<>();
         tabelaProbabilidades = new HashMap<>();
+        listaNodos = new ArrayList<>();
         tamanhoEntrada = 0;
     }
     
@@ -25,6 +29,7 @@ public class Codificador {
         
         geraTabelaOcorrencia(entrada);
         geraTabelaProbabilidade();
+        geraListaNodos();
         
     }
     
@@ -74,6 +79,16 @@ public class Codificador {
             System.out.println(carac + ": " + Float.toString(tabelaProbabilidades.get(carac)));
         }*/
         
+    }
+    
+    public void geraListaNodos(){
+        
+        for(char c: tabelaProbabilidades.keySet()){
+            Nodo nodo = new Nodo(String.valueOf(c), tabelaProbabilidades.get(c));
+            listaNodos.add(nodo);
+            //System.out.println("NOME DA STRING INSERIDA NO NODO: " + nodo.nome); ---DEBUG---      
+        }
+   
     }
     
     public static void main(String[] args) throws IOException{
