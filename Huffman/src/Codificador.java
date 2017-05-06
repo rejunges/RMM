@@ -137,10 +137,10 @@ public class Codificador {
             while(!pilhaCodigo.isEmpty()){
             
                 if(pilhaCodigo.pop() == true){
-                    codigo = codigo + "1";
+                    codigo = "1" + codigo;
                 }
                 else{
-                    codigo = codigo + "0";
+                    codigo = "0" + codigo;
                 }
                 comprimento++;
                 
