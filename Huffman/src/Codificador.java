@@ -21,6 +21,13 @@ public class Codificador {
         tamanhoEntrada = 0;
     }
     
+    public void codifica(File entrada) throws IOException{
+        
+        geraTabelaOcorrencia(entrada);
+        geraTabelaProbabilidade();
+        
+    }
+    
     public void geraTabelaOcorrencia(File entrada) throws FileNotFoundException, IOException{ //envia o arquivo de entrada como parâmetro, para gerar seu FileReader e completar a tabelaOcorrencias;
         
         BufferedReader leitor = new BufferedReader(new FileReader(entrada));
@@ -73,9 +80,8 @@ public class Codificador {
         
         Codificador codificador = new Codificador();
         File entrada = new File("entrada.txt");
-        codificador.geraTabelaOcorrencia(entrada);
-        codificador.geraTabelaProbabilidade();
-    
+        codificador.codifica(entrada);
+
     }
 
     
