@@ -1,6 +1,7 @@
 
 import java.util.HashMap;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,6 +18,8 @@ public class Codificador {
     
     HashMap<Character, Integer> tabelaOcorrencias;
     HashMap<Character, Float> tabelaProbabilidades;
+    HashMap<Character, String> tabelaCodigo;
+    HashMap<Character, Integer> tabelaComprimento;
     ArvoresHuffman arvoreHuffman;
     String arquivoEntrada;
     Stack <Boolean> pbits;
@@ -25,6 +28,8 @@ public class Codificador {
     public Codificador(){
         tabelaOcorrencias = new HashMap<>();
         tabelaProbabilidades = new HashMap<>();
+        tabelaCodigo = new HashMap<>();
+        tabelaComprimento = new HashMap<>();
         tamanhoEntrada = 0;
         arquivoEntrada = "";
         pbits = new Stack<Boolean>();
@@ -106,9 +111,6 @@ public class Codificador {
     }
     
     public void geraCodigoCaracteres(Nodo raiz){
-        Stack <Boolean> pilhaCodigo;
-        boolean codigo[] = null;
-        int comprimento[] = null;
         
         if (raiz.esquerdo != null || raiz.direito != null){
             pbits.push(false);
@@ -118,24 +120,37 @@ public class Codificador {
             geraCodigoCaracteres(raiz.direito);
             pbits.pop();
         }
+        
         else{
             //Chegou na folha
-            pilhaCodigo = pbits;
-            codigo[0] = false;
-            comprimento[0] = 0;
-            int i = 0;
+            Stack <Boolean> pilhaCodigo = pbits;
+            String codigo = "";
+            int comprimento = 0;
             
             while(!pilhaCodigo.isEmpty()){
             
-                codigo[i] = codigo[i] | pilhaCodigo.pop(); //Nao tenho certeza se é assim
-                comprimento[i] += 1;
-                i++;
+                if(pilhaCodigo.pop() == true){
+                    codigo.concat("1");
+                }
+                else{
+                    codigo.concat("0");
+                }
+                comprimento++;
                 
             }
+            
+            tabelaCodigo.put(raiz.nome.charAt(0), codigo);
+            tabelaComprimento.put(raiz.nome.charAt(0), comprimento);    
    
             
         }
         
+        for(char c: tabelaComprimento.keySet()){
+            System.out.println("COMPRIMENTO DO CHAR " + c + ": " + tabelaComprimento.get(c));
+        }
+        for(char c: tabelaCodigo.keySet()){
+            System.out.println("CODIGO DO CHAR " + c + ": " + tabelaCodigo.get(c));
+        }
         
     }
     
