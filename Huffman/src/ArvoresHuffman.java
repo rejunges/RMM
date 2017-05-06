@@ -2,6 +2,7 @@
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.PriorityQueue;
+import java.util.Stack;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -15,15 +16,17 @@ import java.util.PriorityQueue;
  */
 public class ArvoresHuffman {
     
-    HashMap<Character, Float> tabelaProbabilidades;
-    PriorityQueue<Nodo> filaNodos;
-    Comparator<Nodo> comparadorNodos;
+    private HashMap<Character, Float> tabelaProbabilidades;
+    private PriorityQueue<Nodo> filaNodos;
+    private Comparator<Nodo> comparadorNodos;
+    private Stack <Boolean> pbits;
     
     public ArvoresHuffman(HashMap<Character, Float> tabelaProbabilidades){
         
         this.tabelaProbabilidades = tabelaProbabilidades;
         comparadorNodos = new ComparadorProbabilidades();
         filaNodos = new PriorityQueue<>(27, comparadorNodos);
+        pbits = new Stack<Boolean>();
         
     }
     
@@ -58,9 +61,9 @@ public class ArvoresHuffman {
         
     }
     
+    /*----DEBUG---*/
     private void leArvore(Nodo nodo){
         
-         
         System.out.println("\nNodo: " + nodo.nome);
         if (nodo.pai != null){
             System.out.println("Pai: " + nodo.pai.nome);
@@ -90,6 +93,43 @@ public class ArvoresHuffman {
         }
     }
     */
+    
+    public void geraCodigoCaracteres(Nodo raiz, HashMap<Character, String> tabelaCodigo, HashMap<Character, Integer> tabelaComprimento){
+        
+        if (raiz.esquerdo != null || raiz.direito != null){
+            pbits.push(false);
+            geraCodigoCaracteres(raiz.esquerdo, tabelaCodigo, tabelaComprimento);
+            pbits.pop();
+            pbits.push(true);
+            geraCodigoCaracteres(raiz.direito, tabelaCodigo, tabelaComprimento);
+            pbits.pop();
+        }
+        
+        else{
+            //Chegou na folha
+            Stack <Boolean> pilhaCodigo = new Stack<>();
+            pilhaCodigo = (Stack<Boolean>) pbits.clone();
+            String codigo = "";
+            int comprimento = 0;
+            
+            while(!pilhaCodigo.isEmpty()){
+            
+                if(pilhaCodigo.pop() == true){
+                    codigo = "1" + codigo;
+                }
+                else{
+                    codigo = "0" + codigo;
+                }
+                comprimento++;
+                
+            }
+            
+            tabelaCodigo.put(raiz.nome.charAt(0), codigo);
+            tabelaComprimento.put(raiz.nome.charAt(0), comprimento);    
+
+        }
+        
+    }
     
     private void geraFilaNodos(){
         

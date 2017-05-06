@@ -24,7 +24,6 @@ public class Codificador {
     HashMap<Character, Integer> tabelaComprimento;
     ArvoresHuffman arvoreHuffman;
     String arquivoEntrada;
-    Stack <Boolean> pbits;
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
@@ -34,7 +33,6 @@ public class Codificador {
         tabelaComprimento = new HashMap<>();
         tamanhoEntrada = 0;
         arquivoEntrada = "";
-        pbits = new Stack<Boolean>();
         arvoreHuffman = new ArvoresHuffman(tabelaProbabilidades);
     }
     
@@ -45,7 +43,7 @@ public class Codificador {
         geraTabelaProbabilidade();
         gravaArquivoProbabilidade();
         raiz = arvoreHuffman.geraArvore();
-        geraCodigoCaracteres(raiz);
+        arvoreHuffman.geraCodigoCaracteres(raiz, tabelaCodigo, tabelaComprimento);
         /*---DEBUG---
         for(char c: tabelaComprimento.keySet()){
             System.out.println("COMPRIMENTO DO CHAR " + c + ": " + tabelaComprimento.get(c));
@@ -54,7 +52,7 @@ public class Codificador {
             System.out.println("CODIGO DO CHAR " + c + ": " + tabelaCodigo.get(c));
         }*/
         gravaArquivoCodificado();
-        
+        gravaArquivoEntrada();
     }
     
     public void geraTabelaOcorrencia(File entrada) throws FileNotFoundException, IOException{ //envia o arquivo de entrada como parâmetro, para gerar seu FileReader e completar a tabelaOcorrencias;
@@ -137,6 +135,7 @@ public class Codificador {
         
     }
     
+    
     public void escreveBit(boolean bit, DataOutputStream escreve){
         bufferBit <<= 1;
        
@@ -161,40 +160,13 @@ public class Codificador {
         bufferBit = 0;
     }
     
-    public void geraCodigoCaracteres(Nodo raiz){
+    public void gravaArquivoEntrada() throws FileNotFoundException, IOException{
+        File arquivo = new File ("textoOriginalBinario.dat");
+        DataOutputStream escreve = new DataOutputStream(new FileOutputStream(arquivo));
         
-        if (raiz.esquerdo != null || raiz.direito != null){
-            pbits.push(false);
-            geraCodigoCaracteres(raiz.esquerdo);
-            pbits.pop();
-            pbits.push(true);
-            geraCodigoCaracteres(raiz.direito);
-            pbits.pop();
-        }
-        
-        else{
-            //Chegou na folha
-            Stack <Boolean> pilhaCodigo = new Stack<>();
-            pilhaCodigo = (Stack<Boolean>) pbits.clone();
-            String codigo = "";
-            int comprimento = 0;
-            
-            while(!pilhaCodigo.isEmpty()){
-            
-                if(pilhaCodigo.pop() == true){
-                    codigo = "1" + codigo;
-                }
-                else{
-                    codigo = "0" + codigo;
-                }
-                comprimento++;
-                
-            }
-            
-            tabelaCodigo.put(raiz.nome.charAt(0), codigo);
-            tabelaComprimento.put(raiz.nome.charAt(0), comprimento);    
-
-        }
+        escreve.writeBytes(arquivoEntrada);
+        escreve.flush();
+        escreve.close();
         
     }
     
