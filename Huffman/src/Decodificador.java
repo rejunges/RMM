@@ -19,6 +19,7 @@ import java.util.HashMap;
 public class Decodificador {
     
     HashMap<Character, Float> tabelaProbabilidades;
+    HashMap<Character, Integer> tabelaVerificaResultado;
     HashMap<Character, String> tabelaCodigo;
     HashMap<Character, Integer> tabelaComprimento;
     File arquivoComprimido;
@@ -30,11 +31,13 @@ public class Decodificador {
     public Decodificador(File entradaComprimida, File arquivoProbabilidade) throws FileNotFoundException, IOException{
         
         tabelaProbabilidades = new HashMap<>();
+        tabelaVerificaResultado = new HashMap<>();
         geraTabelaProbabilidade(arquivoProbabilidade);
         arvoreHuffman = new ArvoresHuffman(tabelaProbabilidades);
         tabelaCodigo = new HashMap<>();
         tabelaComprimento = new HashMap<>();
         arquivoComprimido = entradaComprimida;
+        resultado = "";
         
     }
     
@@ -44,15 +47,17 @@ public class Decodificador {
         arvoreHuffman.geraCodigoCaracteres(raiz, tabelaCodigo, tabelaComprimento);
         byte[] vetorBytes = new byte[(int) arquivoComprimido.length()];
         String bits;
+        int cont = 0; //Contador pra ver o total de caracteres que tem na string final
+        boolean flag = false; //Verifica se está naqueles ultimos 0s
         int ponteiro; //ponteiro que vai percorrer cada bit
         
-        numeroCaracteres = calculaNumeroCaracteres();
+        //numeroCaracteres = calculaNumeroCaracteres();
         
         DataInputStream leitorBinario = new DataInputStream(new FileInputStream(arquivoComprimido));
         leitorBinario.readFully(vetorBytes, 0, (int) arquivoComprimido.length());
         bits = leBytes(vetorBytes);
         
-        System.out.println("STRING DE BITS: " + bits); //---DEBUG---
+        //System.out.println("STRING DE BITS: " + bits); //---DEBUG---
         
         for(ponteiro = 0; ponteiro < bits.length(); ponteiro++){ //vai procurando cada bit na tabela até achar o código correspondente
             String codigo = "";
@@ -60,24 +65,66 @@ public class Decodificador {
             
             while(!tabelaCodigo.containsValue(codigo)){ //enquanto não achar o código correspondente, vai incrementando o comprimento a procurar
                 ponteiro++;
-                codigo += bits.toCharArray()[ponteiro];
-                System.out.println("Codigo: " + codigo); //DEBUG
-            }
-            
-            for(char c: tabelaCodigo.keySet()){ //procura o caractere correspondente ao código e armazena na String resultado
-                if(tabelaCodigo.get(c).equals(codigo)){
-                    resultado += c;
-                    System.out.println("Adicionou " + c + "\n"); //DEBUG
+                
+                if (ponteiro < bits.length()){
+                    codigo += bits.toCharArray()[ponteiro];
+                }
+                else{
+                    flag = true;
                     break;
                 }
             }
             
-            ponteiro++;
+            if (!flag){
+                for(char c: tabelaCodigo.keySet()){ //procura o caractere correspondente ao código e armazena na String resultado
+                    if(tabelaCodigo.get(c).equals(codigo)){
+                        resultado += c;
+                        cont++;
+                        
+                        if(tabelaVerificaResultado.containsKey(c)){
+                            tabelaVerificaResultado.put(c, tabelaVerificaResultado.get(c)+1); //incrementa quando acha o caractere
+                        }
+                        else{
+                            tabelaVerificaResultado.put(c, 1); //primeira ocorrencia do caractere
+                        }
+                        
+                        break;
+                    }
+                    
+                }
+            }
+
             
         }
-        
+
+        verificaResultado(cont);
+       // System.out.println("Resultado:" +resultado + "\n");
         gravaResultado();
         
+    }
+    
+    public void verificaResultado(int cont){
+        float prob = 0;
+        String resultadoParcial;
+        char ultimaLetra;
+        
+        for (char c : tabelaProbabilidades.keySet()){
+            prob = (float)(tabelaVerificaResultado.get(c) * 100)/cont;
+            resultadoParcial = "";
+            if (prob == tabelaProbabilidades.get(c)){
+                break;
+            }
+            else{
+                for(int i = 0; i < resultado.length() - 1; i++){
+                resultadoParcial += resultado.charAt(i);
+                }
+                ultimaLetra = resultado.charAt(resultado.length()-1);
+                resultado = resultadoParcial;
+                tabelaVerificaResultado.replace(ultimaLetra, tabelaVerificaResultado.get(ultimaLetra) - 1);
+                cont--;
+                c--;
+            }
+        }
     }
     
     public String leBytes(byte[] bytesLeitura){
@@ -113,21 +160,6 @@ public class Decodificador {
 
     }
     
-    public int calculaNumeroCaracteres(){
-        
-        int total = 0;
-        float prob = 100;
-        
-        for(char c: tabelaProbabilidades.keySet()){
-            total += Math.floor((double) prob/tabelaProbabilidades.get(c));
-            prob = prob - tabelaProbabilidades.get(c);
-            System.out.println("Quantidade do caractere (acumulada) " + c + ": " + total);
-        }
-        
-        System.out.println("Total de caracteres: " + String.valueOf(total));
-        
-        return total;
-    }
     
     public void gravaResultado() throws IOException{
         
