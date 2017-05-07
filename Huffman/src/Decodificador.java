@@ -18,13 +18,12 @@ import java.util.HashMap;
 
 public class Decodificador {
     
-    private static int bufferBit;
-    private static int n;
     HashMap<Character, Float> tabelaProbabilidades;
     HashMap<Character, String> tabelaCodigo;
     HashMap<Character, Integer> tabelaComprimento;
     File arquivoComprimido;
     ArvoresHuffman arvoreHuffman;
+    int numeroCaracteres; //número da caracteres (calculado através da tabela de probabilidade)
     String resultado;
     
     //Receber uma entrada comprimida e o arquivo com a probabilidade de ocorrência de cada caractere
@@ -46,6 +45,8 @@ public class Decodificador {
         byte[] vetorBytes = new byte[(int) arquivoComprimido.length()];
         String bits;
         int ponteiro; //ponteiro que vai percorrer cada bit
+        
+        numeroCaracteres = calculaNumeroCaracteres();
         
         DataInputStream leitorBinario = new DataInputStream(new FileInputStream(arquivoComprimido));
         leitorBinario.readFully(vetorBytes, 0, (int) arquivoComprimido.length());
@@ -110,6 +111,22 @@ public class Decodificador {
             System.out.println("PROBABILIDADE " + car + ": " + String.valueOf(tp.get(car)));
         }*/
 
+    }
+    
+    public int calculaNumeroCaracteres(){
+        
+        int total = 0;
+        float prob = 100;
+        
+        for(char c: tabelaProbabilidades.keySet()){
+            total += Math.floor((double) prob/tabelaProbabilidades.get(c));
+            prob = prob - tabelaProbabilidades.get(c);
+            System.out.println("Quantidade do caractere (acumulada) " + c + ": " + total);
+        }
+        
+        System.out.println("Total de caracteres: " + String.valueOf(total));
+        
+        return total;
     }
     
     public void gravaResultado() throws IOException{
