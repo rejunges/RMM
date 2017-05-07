@@ -16,14 +16,14 @@ import java.util.Stack;
 
 public class Codificador {
     
-    private static int bufferBit;   
+    private static int bufferBit; //os 2 atributos privados aqui são usados para escrever bit a bit no arquivo de saída (função escreveBit)
     private static int n;
-    HashMap<Character, Integer> tabelaOcorrencias;
-    HashMap<Character, Float> tabelaProbabilidades;
-    HashMap<Character, String> tabelaCodigo;
-    HashMap<Character, Integer> tabelaComprimento;
-    ArvoresHuffman arvoreHuffman;
-    String arquivoEntrada;
+    HashMap<Character, Integer> tabelaOcorrencias; //tabela de ocorrências de cada caractere do texto de entrada
+    HashMap<Character, Float> tabelaProbabilidades; //tabela de probabilidade de cada caractere do texto de entrada
+    HashMap<Character, String> tabelaCodigo; //tabela com o código correspondente a cada caractere da entrada, após a codificação de Huffman
+    HashMap<Character, Integer> tabelaComprimento; //tabela com o comprimento do código correspondente de cada caractere
+    ArvoresHuffman arvoreHuffman; //árvore de huffman, criada com a tabela de probabilidades -> retorna o nó raíz
+    String arquivoEntrada; //String que armazena o texto de entrada
     int tamanhoEntrada; //número total de caracteres da entrada
     
     public Codificador(){
@@ -65,7 +65,7 @@ public class Codificador {
             
             tamanhoEntrada++;
             c = (char) valorChar;
-            arquivoEntrada += c;
+            arquivoEntrada += c; //vai concatenando a string resultante do arquivo
             if(tabelaOcorrencias.containsKey(c)){
                 tabelaOcorrencias.put(c, tabelaOcorrencias.get(c)+1); //incrementa quando acha o caractere
             }

@@ -9,7 +9,7 @@ import java.util.Comparator;
 
 /**
  *
- * @author C3PO
+ * @author Renata e Yan - RMM 2017/1
  */
 public class ComparadorProbabilidades implements Comparator<Nodo> {
     

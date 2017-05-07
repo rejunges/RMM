@@ -12,7 +12,7 @@ import java.util.Stack;
 
 /**
  *
- * @author Renata e Yan
+ * @author Renata e Yan - RMM 2017/1
  */
 public class ArvoresHuffman {
     
@@ -55,13 +55,13 @@ public class ArvoresHuffman {
         }
         
        /* ---DEBUG ---*/
-       leArvore(nodo);
+       //leArvore(nodo);
        
         return nodo; //Vai ser sempre a raiz
         
     }
     
-    /*----DEBUG---*/
+    /*----DEBUG---
     private void leArvore(Nodo nodo){
         
         System.out.println("\nNodo: " + nodo.nome);
@@ -83,7 +83,7 @@ public class ArvoresHuffman {
         
         
         
-    }
+    }*/
     
     /*---DEBUG---
     private void printFilaNodos(){
