@@ -147,16 +147,23 @@ public class Decodificador {
         float probabilidade;
         
         while((linha = leitor.readLine()) != null){
-            valoresLinha = linha.split(" ");
-            c = valoresLinha[0].toCharArray()[0];
-            probabilidade = Float.valueOf(valoresLinha[1]);
-            tabelaProbabilidades.put(c, probabilidade);
+            if(linha.startsWith(" ")){ //caso especial de ser o caractere espaço
+                c = ' ';
+                probabilidade = Float.valueOf(linha.substring(2, linha.length())); //pega o valor da probabilidade
+                tabelaProbabilidades.put(c, probabilidade);
+            }
+            else{
+                valoresLinha = linha.split(" ");
+                c = valoresLinha[0].toCharArray()[0];
+                probabilidade = Float.valueOf(valoresLinha[1]);
+                tabelaProbabilidades.put(c, probabilidade);
+            }    
         }
         
-        /*---DEBUG---
-        for(char car: tp.keySet()){
-            System.out.println("PROBABILIDADE " + car + ": " + String.valueOf(tp.get(car)));
-        }*/
+        
+        for(char car: tabelaProbabilidades.keySet()){
+            System.out.println("PROBABILIDADE " + car + ": " + String.valueOf(tabelaProbabilidades.get(car)));
+        }
 
     }
     
