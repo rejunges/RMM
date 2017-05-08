@@ -107,22 +107,25 @@ public class Decodificador {
         float prob = 0;
         String resultadoParcial;
         char ultimaLetra;
+        boolean flag = false;
         
         for (char c : tabelaProbabilidades.keySet()){
-            prob = (float)(tabelaVerificaResultado.get(c) * 100)/cont;
-            resultadoParcial = "";
-            if (prob == tabelaProbabilidades.get(c)){
-                break;
-            }
-            else{
-                for(int i = 0; i < resultado.length() - 1; i++){
-                resultadoParcial += resultado.charAt(i);
+            while (!flag){
+                //System.out.println(c);
+                prob = (float)(tabelaVerificaResultado.get(c) * 100)/cont;
+                resultadoParcial = "";
+                if (!(prob == tabelaProbabilidades.get(c))){
+
+                    for(int i = 0; i < resultado.length() - 1; i++){
+                        resultadoParcial += resultado.charAt(i);
+                    }
+
+                    ultimaLetra = resultado.charAt(resultado.length()-1);
+                    resultado = resultadoParcial;
+                    tabelaVerificaResultado.replace(ultimaLetra, tabelaVerificaResultado.get(ultimaLetra) - 1);
+                    cont--;
                 }
-                ultimaLetra = resultado.charAt(resultado.length()-1);
-                resultado = resultadoParcial;
-                tabelaVerificaResultado.replace(ultimaLetra, tabelaVerificaResultado.get(ultimaLetra) - 1);
-                cont--;
-                c--;
+                else flag = true;
             }
         }
     }
