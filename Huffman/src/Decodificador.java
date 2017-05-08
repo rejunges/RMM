@@ -50,15 +50,11 @@ public class Decodificador {
         int cont = 0; //Contador pra ver o total de caracteres que tem na string final
         boolean flag = false; //Verifica se está naqueles ultimos 0s
         int ponteiro; //ponteiro que vai percorrer cada bit
-        
-        //numeroCaracteres = calculaNumeroCaracteres();
-        
+                
         DataInputStream leitorBinario = new DataInputStream(new FileInputStream(arquivoComprimido));
         leitorBinario.readFully(vetorBytes, 0, (int) arquivoComprimido.length());
         bits = leBytes(vetorBytes);
-        
-        //System.out.println("STRING DE BITS: " + bits); //---DEBUG---
-        
+                
         for(ponteiro = 0; ponteiro < bits.length(); ponteiro++){ //vai procurando cada bit na tabela até achar o código correspondente
             String codigo = "";
             codigo += bits.toCharArray()[ponteiro];
@@ -98,7 +94,6 @@ public class Decodificador {
         }
 
         verificaResultado(cont);
-       // System.out.println("Resultado:" +resultado + "\n");
         gravaResultado();
         
     }
@@ -111,7 +106,6 @@ public class Decodificador {
         
         for (char c : tabelaProbabilidades.keySet()){
             while (!flag){
-                //System.out.println(c);
                 prob = (float)(tabelaVerificaResultado.get(c) * 100)/cont;
                 resultadoParcial = "";
                 if (!(prob == tabelaProbabilidades.get(c))){
@@ -163,10 +157,6 @@ public class Decodificador {
             }    
         }
         
-        
-        for(char car: tabelaProbabilidades.keySet()){
-            System.out.println("PROBABILIDADE " + car + ": " + String.valueOf(tabelaProbabilidades.get(car)));
-        }
 
     }
     

@@ -44,13 +44,6 @@ public class Codificador {
         gravaArquivoProbabilidade();
         raiz = arvoreHuffman.geraArvore();
         arvoreHuffman.geraCodigoCaracteres(raiz, tabelaCodigo, tabelaComprimento);
-        /*---DEBUG---
-        for(char c: tabelaComprimento.keySet()){
-            System.out.println("COMPRIMENTO DO CHAR " + c + ": " + tabelaComprimento.get(c));
-        }
-        for(char c: tabelaCodigo.keySet()){
-            System.out.println("CODIGO DO CHAR " + c + ": " + tabelaCodigo.get(c));
-        }*/
         gravaArquivoCodificado();
         gravaArquivoEntrada();
     }
@@ -75,12 +68,6 @@ public class Codificador {
        
         }
         
-        /* ---DEBUG---
-        System.out.println("Tabela de ocorrencias: \n");
-        for(char carac: tabelaOcorrencias.keySet()){
-            System.out.println(carac + ": " + tabelaOcorrencias.get(carac).toString());
-        }*/
-
     }
     
     public void geraTabelaProbabilidade(){
@@ -95,12 +82,6 @@ public class Codificador {
             tabelaProbabilidades.put(letra, probabilidade);
        
         } 
-        
-        /* ---DEBUG---
-        System.out.println("Tabela de probabilidades: \n");
-        for(char carac: tabelaProbabilidades.keySet()){
-            System.out.println(carac + ": " + Float.toString(tabelaProbabilidades.get(carac)));
-        }*/
         
     }
     
