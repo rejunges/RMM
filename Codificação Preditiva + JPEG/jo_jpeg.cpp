@@ -353,12 +353,20 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 #endif
 
 void cod_pred (char* nomeArquivo){
-
+		int i,j;
 		float** matrizImagem;
 		float** matrizTransformada;
+		float** matrizResiduo = criaMatriz();
 
 		matrizImagem = geraMatriz(nomeArquivo);
 		matrizTransformada = transformaMatriz(matrizImagem);
+		//Cria Matriz resíduo
+		for(i = 0; i < LINHAS; i++){
+			for(j = 0; j < COLUNAS; j++){
+				matrizResiduo[i][j] = matrizImagem[i][j] - matrizTransformada[i][j];
+			}
+		}
+		
 		//geraArquivoComprimido(matrizTransformada);
 
 }
@@ -423,8 +431,8 @@ float** transformaMatriz(float** matrizImagem){
 	float** matrizTransformada = criaMatriz();
 
 	//Inicializa a matriz transformada com os valores que não serão alterados
-	for(j = 1; j < COLUNAS; j++) matrizTransformada[0][j] = matrizImagem[0][j];
-	for(i = 1; i < LINHAS; i++)	matrizTransformada[i][0] = matrizImagem[i][0];
+	for(j = 0; j < COLUNAS; j++) matrizTransformada[0][j] = matrizImagem[0][j];
+	for(i = 0; i < LINHAS; i++)	matrizTransformada[i][0] = matrizImagem[i][0];
 
 	//Começa em 1 porque a linha zero não deve ser modificada
 	for (i = 1; i < LINHAS; i++){
