@@ -53,9 +53,10 @@ const int COLUNAS = 512;
 //Funções adicionais para fazer compressão:
 
 void cod_pred (char* nomeArquivo); //função geral que aplica as etapas de compressão
-unsigned int** geraMatriz (char* nomeArquivo); //gera a matriz de unsigned ints de acordo com a imagem de entrada
-unsigned int** transformaMatriz (unsigned int** matrizTransformada); //faz a transformação/técnica preditiva em cima da matriz da imagem
-void geraArquivoComprimido (unsigned int** matrizTransformada); //gera o .raw comprimido
+float** geraMatriz (char* nomeArquivo); //gera a matriz de floats de acordo com a imagem de entrada
+float** transformaMatriz (float** matrizTransformada); //faz a transformação/técnica preditiva em cima da matriz da imagem
+void geraArquivoComprimido (float** matrizTransformada); //gera o .raw comprimido
+float** criaMatriz();
 
 static const unsigned char s_jo_ZigZag[] = { 0,1,5,6,14,15,27,28,2,4,7,13,16,26,29,42,3,8,12,17,25,30,41,43,9,11,18,24,31,40,44,53,10,19,23,32,39,45,52,54,20,22,33,38,46,51,55,60,21,34,37,47,50,56,59,61,35,36,48,49,57,58,62,63 };
 
@@ -353,35 +354,37 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 
 void cod_pred (char* nomeArquivo){
 
-		unsigned int** matrizImagem//, matrizTransformada;
+		float** matrizImagem;
+		float** matrizTransformada;
 
 		matrizImagem = geraMatriz(nomeArquivo);
-		//matrizTransformada = transformaMatriz(matrizImagem);
+		matrizTransformada = transformaMatriz(matrizImagem);
 		//geraArquivoComprimido(matrizTransformada);
 
 }
 
-unsigned int** geraMatriz (char* nomeArquivo){
+float** geraMatriz (char* nomeArquivo){
 
 	ifstream streamArquivo(nomeArquivo, ios::in | ios::binary); //usando ios::in e ios::binary garante que nenhum dado do arquivo de entrada seja perdido
 
 	unsigned char ch;
-	unsigned int** matrizImagem; //construtor para a matriz
+	float** matrizImagem; //construtor para a matriz
 	int i = 0, j = 0;
 
-	matrizImagem = new unsigned int*[LINHAS]; //aloca a matriz da imagem de acordo com o tamanho de linhas/colunas
+	/*matrizImagem = new float*[LINHAS]; //aloca a matriz da imagem de acordo com o tamanho de linhas/colunas
 	for(i=0; i<LINHAS; i++){
-		matrizImagem[i] = new unsigned int[COLUNAS];
+		matrizImagem[i] = new float[COLUNAS];
 		//printf("alocou linha %d\n", i);
-	}
+	}*/
+	matrizImagem = criaMatriz();
 
 	i = 0;
 
 	while (streamArquivo >> ch){
-			//cout << (unsigned int)ch << " "; DEBUG PARA VER O QUE ESTÁ SALVANDO NA MATRIZ
-			matrizImagem[i][j] = (unsigned int) ch;
+			//cout << (float)ch << " "; DEBUG PARA VER O QUE ESTÁ SALVANDO NA MATRIZ
+			matrizImagem[i][j] = (float) ch;
 			j++; //incrementa coluna
-			if(j%512 == 0){
+			if(j%COLUNAS == 0){
 				i++; //se acabou as colunas, incrementa linha
 				j = 0;
 			}
@@ -400,11 +403,48 @@ unsigned int** geraMatriz (char* nomeArquivo){
 
 }
 
-unsigned int** transformaMatriz(unsigned int** matrizImagem){
-	return NULL;
+float** criaMatriz(){
+	float** matriz;
+	int i;
+
+	matriz = new float*[LINHAS]; //Aloca a matriz da imagem de acordo com o tamanho de linahs/colunas
+	for(i = 0; i < LINHAS; i++){
+		matriz[i] = new float[COLUNAS];
+		//printf("Alocou linha %d\n", i);
+	}
+
+	return matriz;
 }
 
-void geraArquivoComprimido(unsigned int** matrizTransformada){
+float** transformaMatriz(float** matrizImagem){
+	//Implementado o modo 4 (diag/right)
+	int i, j;
+	float calculo_predicao = 0;
+	float** matrizTransformada = criaMatriz();
+
+	//Inicializa a matriz transformada com os valores que não serão alterados
+	for(j = 1; j < COLUNAS; j++) matrizTransformada[0][j] = matrizImagem[0][j];
+	for(i = 1; i < LINHAS; i++)	matrizTransformada[i][0] = matrizImagem[i][0];
+
+	//Começa em 1 porque a linha zero não deve ser modificada
+	for (i = 1; i < LINHAS; i++){
+		//Começa em 1 porque a coluna 0 não deve ser modificada
+		for(j = 1; j < LINHAS; j++){
+			calculo_predicao = matrizImagem[i-1][j-1]*0.5 + matrizImagem[i-1][j]*0.25 + matrizImagem[i][j-1]*0.25;
+			matrizTransformada[i][j] = calculo_predicao;
+		}
+	}
+	/*DEBUG PARA IMPRIMIR A MATRIZ
+	for(i=0; i<LINHAS; i++){
+		for(j=0; j<COLUNAS; j++){
+			cout << matrizTransformada[i][j] << " ";
+		}
+		cout << "\n";
+	}*/	
+	return matrizTransformada;
+}
+
+void geraArquivoComprimido(float** matrizTransformada){
 
 }
 
