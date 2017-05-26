@@ -52,10 +52,10 @@ const int COLUNAS = 512;
 
 //Funções adicionais para fazer compressão:
 
-void cod_pred (char* nomeArquivo); //função geral que aplica as etapas de compressão
+char* cod_pred (char* nomeArquivo); //função geral que aplica as etapas de compressão
 float** geraMatriz (char* nomeArquivo); //gera a matriz de floats de acordo com a imagem de entrada
 float** transformaMatriz (float** matrizTransformada); //faz a transformação/técnica preditiva em cima da matriz da imagem
-void geraArquivoComprimido (float** matrizTransformada); //gera o .raw comprimido
+char* geraArquivoComprimido (float** matrizResiduo); //gera o .raw comprimido
 float** criaMatriz();
 
 static const unsigned char s_jo_ZigZag[] = { 0,1,5,6,14,15,27,28,2,4,7,13,16,26,29,42,3,8,12,17,25,30,41,43,9,11,18,24,31,40,44,53,10,19,23,32,39,45,52,54,20,22,33,38,46,51,55,60,21,34,37,47,50,56,59,61,35,36,48,49,57,58,62,63 };
@@ -352,8 +352,9 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 
 #endif
 
-void cod_pred (char* nomeArquivo){
+char* cod_pred (char* nomeArquivo){
 		int i,j;
+		char* matrizResiduoChar;
 		float** matrizImagem;
 		float** matrizTransformada;
 		float** matrizResiduo = criaMatriz();
@@ -366,8 +367,10 @@ void cod_pred (char* nomeArquivo){
 				matrizResiduo[i][j] = matrizImagem[i][j] - matrizTransformada[i][j];
 			}
 		}
-		
-		//geraArquivoComprimido(matrizTransformada);
+
+		matrizResiduoChar = geraArquivoComprimido(matrizResiduo);
+
+		return matrizResiduoChar;
 
 }
 
@@ -448,14 +451,38 @@ float** transformaMatriz(float** matrizImagem){
 			cout << matrizTransformada[i][j] << " ";
 		}
 		cout << "\n";
-	}*/	
+	}*/
 	return matrizTransformada;
 }
 
-void geraArquivoComprimido(float** matrizTransformada){
+char* geraArquivoComprimido(float** matrizResiduo){
+
+	unsigned int caractere;
+	char* matrizResiduoChar = new char[LINHAS*COLUNAS];
+	int i, j, k = 0;
+
+	ofstream arquivoSaida ("saida.raw", ios::out | ios::binary);
+
+	for(i=0; i<LINHAS; i++){
+		for(j=0; j<COLUNAS; j++){
+			caractere = static_cast<unsigned int>(matrizResiduo[i][j]); //transforma os float em unsigned int para gravar no .raw
+			arquivoSaida.write ((char*)&caractere, sizeof (unsigned int));
+			matrizResiduoChar[k] = (char) caractere;
+			k++;
+		}
+	}
+
+	printf("valor final de k: %d", k);
+
+	arquivoSaida.close();
+
+	return matrizResiduoChar;
 
 }
 
 int main(){
-    cod_pred((char*)"lena.raw"); //dá warning se não passar com (char*)
+		char *dados; //matriz de resíduos em forma de caractere, para poder usar a função jo_write_jpg
+    dados = cod_pred((char*)"lena.raw"); //dá warning se não passar com (char*)
+
+		jo_write_jpg((char*)"saida.jpg", dados, LINHAS, COLUNAS, 1, 90);
 }
