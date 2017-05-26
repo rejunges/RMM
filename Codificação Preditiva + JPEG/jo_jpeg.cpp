@@ -6,7 +6,7 @@
  * 	Supports 1, 3 or 4 component input. (luminance, RGB or RGBX)
  *
  * Latest revisions:
- *	1.52 (2012-22-11) Added support for specifying Luminance, RGB, or RGBA via comp(onents) argument (1, 3 and 4 respectively). 
+ *	1.52 (2012-22-11) Added support for specifying Luminance, RGB, or RGBA via comp(onents) argument (1, 3 and 4 respectively).
  *	1.51 (2012-19-11) Fixed some warnings
  *	1.50 (2012-18-11) MT safe. Simplified. Optimized. Reduced memory requirements. Zero allocations. No namespace polution. Approx 340 lines code.
  *	1.10 (2012-16-11) compile fixes, added docs,
@@ -14,9 +14,9 @@
  * 	1.00 (2012-02-02) initial release
  *
  * Basic usage:
- *	char *foo = new char[128*128*4]; // 4 component. RGBX format, where X is unused 
+ *	char *foo = new char[128*128*4]; // 4 component. RGBX format, where X is unused
  *	jo_write_jpg("foo.jpg", foo, 128, 128, 4, 90); // comp can be 1, 3, or 4. Lum, RGB, or RGBX respectively.
- * 	
+ *
  * */
 
 #ifndef JO_INCLUDE_JPEG_H
@@ -40,6 +40,22 @@ extern bool jo_write_jpg(const char *filename, const void *data, int width, int 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <fstream>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+//número de linhas e colunas da imagem:
+
+const int LINHAS = 512;
+const int COLUNAS = 512;
+
+//Funções adicionais para fazer compressão:
+
+void cod_pred (char* nomeArquivo); //função geral que aplica as etapas de compressão
+unsigned int** geraMatriz (char* nomeArquivo); //gera a matriz de unsigned ints de acordo com a imagem de entrada
+unsigned int** transformaMatriz (unsigned int** matrizTransformada); //faz a transformação/técnica preditiva em cima da matriz da imagem
+void geraArquivoComprimido (unsigned int** matrizTransformada); //gera o .raw comprimido
 
 static const unsigned char s_jo_ZigZag[] = { 0,1,5,6,14,15,27,28,2,4,7,13,16,26,29,42,3,8,12,17,25,30,41,43,9,11,18,24,31,40,44,53,10,19,23,32,39,45,52,54,20,22,33,38,46,51,55,60,21,34,37,47,50,56,59,61,35,36,48,49,57,58,62,63 };
 
@@ -98,7 +114,7 @@ static void jo_DCT(float &d0, float &d1, float &d2, float &d3, float &d4, float 
 	d3 = z13 - z2;
 	d1 = z11 + z4;
 	d7 = z11 - z4;
-} 
+}
 
 static void jo_calcBits(int val, unsigned short bits[2]) {
 	int tmp1 = val < 0 ? -val : val;
@@ -130,7 +146,7 @@ static int jo_processDU(FILE *fp, int &bitBuf, int &bitCnt, float *CDU, float *f
 	}
 
 	// Encode DC
-	int diff = DU[0] - DC; 
+	int diff = DU[0] - DC;
 	if (diff == 0) {
 		jo_writeBits(fp, bitBuf, bitCnt, HTDC[0]);
 	} else {
@@ -199,7 +215,7 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 	// Huffman tables
 	static const unsigned short YDC_HT[256][2] = { {0,2},{2,3},{3,3},{4,3},{5,3},{6,3},{14,4},{30,5},{62,6},{126,7},{254,8},{510,9}};
 	static const unsigned short UVDC_HT[256][2] = { {0,2},{1,2},{2,2},{6,3},{14,4},{30,5},{62,6},{126,7},{254,8},{510,9},{1022,10},{2046,11}};
-	static const unsigned short YAC_HT[256][2] = { 
+	static const unsigned short YAC_HT[256][2] = {
 		{10,4},{0,2},{1,2},{4,3},{11,4},{26,5},{120,7},{248,8},{1014,10},{65410,16},{65411,16},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
 		{12,4},{27,5},{121,7},{502,9},{2038,11},{65412,16},{65413,16},{65414,16},{65415,16},{65416,16},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
 		{28,5},{249,8},{1015,10},{4084,12},{65417,16},{65418,16},{65419,16},{65420,16},{65421,16},{65422,16},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
@@ -217,7 +233,7 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 		{65515,16},{65516,16},{65517,16},{65518,16},{65519,16},{65520,16},{65521,16},{65522,16},{65523,16},{65524,16},{0,0},{0,0},{0,0},{0,0},{0,0},
 		{2041,11},{65525,16},{65526,16},{65527,16},{65528,16},{65529,16},{65530,16},{65531,16},{65532,16},{65533,16},{65534,16},{0,0},{0,0},{0,0},{0,0},{0,0}
 	};
-	static const unsigned short UVAC_HT[256][2] = { 
+	static const unsigned short UVAC_HT[256][2] = {
 		{0,2},{1,2},{4,3},{10,4},{24,5},{25,5},{56,6},{120,7},{500,9},{1014,10},{4084,12},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
 		{11,4},{57,6},{246,8},{501,9},{2038,11},{4085,12},{65416,16},{65417,16},{65418,16},{65419,16},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
 		{26,5},{247,8},{1015,10},{4086,12},{32706,15},{65420,16},{65421,16},{65422,16},{65423,16},{65424,16},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},
@@ -320,7 +336,7 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 			DCV = jo_processDU(fp, bitBuf, bitCnt, VDU, fdtbl_UV, DCV, UVDC_HT, UVAC_HT);
 		}
 	}
-	
+
 	// Do the bit alignment of the EOI marker
 	static const unsigned short fillBits[] = {0x7F, 7};
 	jo_writeBits(fp, bitBuf, bitCnt, fillBits);
@@ -335,3 +351,63 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 
 #endif
 
+void cod_pred (char* nomeArquivo){
+
+		unsigned int** matrizImagem//, matrizTransformada;
+
+		matrizImagem = geraMatriz(nomeArquivo);
+		//matrizTransformada = transformaMatriz(matrizImagem);
+		//geraArquivoComprimido(matrizTransformada);
+
+}
+
+unsigned int** geraMatriz (char* nomeArquivo){
+
+	ifstream streamArquivo(nomeArquivo, ios::in | ios::binary); //usando ios::in e ios::binary garante que nenhum dado do arquivo de entrada seja perdido
+
+	unsigned char ch;
+	unsigned int** matrizImagem; //construtor para a matriz
+	int i = 0, j = 0;
+
+	matrizImagem = new unsigned int*[LINHAS]; //aloca a matriz da imagem de acordo com o tamanho de linhas/colunas
+	for(i=0; i<LINHAS; i++){
+		matrizImagem[i] = new unsigned int[COLUNAS];
+		//printf("alocou linha %d\n", i);
+	}
+
+	i = 0;
+
+	while (streamArquivo >> ch){
+			//cout << (unsigned int)ch << " "; DEBUG PARA VER O QUE ESTÁ SALVANDO NA MATRIZ
+			matrizImagem[i][j] = (unsigned int) ch;
+			j++; //incrementa coluna
+			if(j%512 == 0){
+				i++; //se acabou as colunas, incrementa linha
+				j = 0;
+			}
+	}
+
+	/*DEBUG PARA IMPRIMIR A MATRIZ
+	for(i=0; i<LINHAS; i++){
+		for(j=0; j<COLUNAS; j++){
+			cout << matrizImagem[i][j] << " ";
+		}
+		cout << "\n";
+	}*/
+
+	streamArquivo.close();
+	return matrizImagem;
+
+}
+
+unsigned int** transformaMatriz(unsigned int** matrizImagem){
+	return NULL;
+}
+
+void geraArquivoComprimido(unsigned int** matrizTransformada){
+
+}
+
+int main(){
+    cod_pred((char*)"lena.raw"); //dá warning se não passar com (char*)
+}
