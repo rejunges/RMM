@@ -466,13 +466,13 @@ char* geraArquivoComprimido(float** matrizResiduo){
 	for(i=0; i<LINHAS; i++){
 		for(j=0; j<COLUNAS; j++){
 			caractere = static_cast<unsigned int>(matrizResiduo[i][j]); //transforma os float em unsigned int para gravar no .raw
-			arquivoSaida.write ((char*)&caractere, sizeof (unsigned int));
+			arquivoSaida.write ((char*)&caractere, sizeof (unsigned char));
 			matrizResiduoChar[k] = (char) caractere;
 			k++;
 		}
 	}
 
-	printf("valor final de k: %d", k);
+	//printf("valor final de k: %d", k);
 
 	arquivoSaida.close();
 
@@ -481,8 +481,7 @@ char* geraArquivoComprimido(float** matrizResiduo){
 }
 
 int main(){
-		char *dados; //matriz de resíduos em forma de caractere, para poder usar a função jo_write_jpg
+	char *dados; //matriz de resíduos em forma de caractere, para poder usar a função jo_write_jpg
     dados = cod_pred((char*)"lena.raw"); //dá warning se não passar com (char*)
-
-		jo_write_jpg((char*)"saida.jpg", dados, LINHAS, COLUNAS, 1, 90);
+	jo_write_jpg((char*)"saida.jpg", dados, LINHAS, COLUNAS, 1, 90);
 }
