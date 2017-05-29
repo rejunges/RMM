@@ -362,11 +362,22 @@ char* cod_pred (char* nomeArquivo){
 		matrizImagem = geraMatriz(nomeArquivo);
 		matrizTransformada = transformaMatriz(matrizImagem);
 		//Cria Matriz resíduo
-		for(i = 0; i < LINHAS; i++){
-			for(j = 0; j < COLUNAS; j++){
+
+		for(j = 0; j < COLUNAS; j++) matrizResiduo[0][j] = matrizTransformada[0][j]; //primeira linha e coluna se mantêm
+		for(i = 0; i < LINHAS; i++)  matrizResiduo[i][0] = matrizTransformada[i][0];
+
+		for(i = 1; i < LINHAS; i++){
+			for(j = 1; j < COLUNAS; j++){
 				matrizResiduo[i][j] = matrizImagem[i][j] - matrizTransformada[i][j];
 			}
 		}
+
+		/*for(i=0; i<LINHAS; i++){
+			for(j=0; j<COLUNAS; j++){
+				cout << matrizResiduo[i][j] << " ";
+			}
+			cout << "\n";
+		}*/
 
 		matrizResiduoChar = geraArquivoComprimido(matrizResiduo);
 
@@ -466,13 +477,14 @@ char* geraArquivoComprimido(float** matrizResiduo){
 	for(i=0; i<LINHAS; i++){
 		for(j=0; j<COLUNAS; j++){
 			caractere = static_cast<unsigned int>(matrizResiduo[i][j]); //transforma os float em unsigned int para gravar no .raw
-			arquivoSaida.write ((char*)&caractere, sizeof (unsigned char));
+			caractere = caractere + 128;
+			arquivoSaida.write ((char*)&caractere, sizeof (char));
 			matrizResiduoChar[k] = (char) caractere;
 			k++;
 		}
 	}
 
-	//printf("valor final de k: %d", k);
+	//printf("valor final de k: %d\n", k);
 
 	arquivoSaida.close();
 
@@ -482,6 +494,6 @@ char* geraArquivoComprimido(float** matrizResiduo){
 
 int main(){
 	char *dados; //matriz de resíduos em forma de caractere, para poder usar a função jo_write_jpg
-    dados = cod_pred((char*)"lena.raw"); //dá warning se não passar com (char*)
+    	dados = cod_pred((char*)"lena.raw"); //dá warning se não passar com (char*)
 	jo_write_jpg((char*)"saida.jpg", dados, LINHAS, COLUNAS, 1, 90);
 }
