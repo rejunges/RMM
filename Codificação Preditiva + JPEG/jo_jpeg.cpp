@@ -47,16 +47,19 @@ using namespace std;
 
 //número de linhas e colunas da imagem:
 
-const int LINHAS = 512;
-const int COLUNAS = 512;
+int LINHAS;
+int COLUNAS;
 
 //Funções adicionais para fazer compressão:
 
-char* cod_pred (char* nomeArquivo); //função geral que aplica as etapas de compressão
+char* compressaoPred (char* nomeArquivo); //função geral que aplica as etapas de compressão preditiva
 float** geraMatriz (char* nomeArquivo); //gera a matriz de floats de acordo com a imagem de entrada
-float** transformaMatriz (float** matrizTransformada); //faz a transformação/técnica preditiva em cima da matriz da imagem
-char* geraArquivoComprimido (float** matrizResiduo); //gera o .raw comprimido
+float** predizMatriz (float** matriz); //faz a transformação/técnica preditiva em cima da matriz da imagem
+char* geraArquivoComprimido(float** matrizResiduo, char* nomeArquivoSaida); //gera o .raw comprimido
 float** criaMatriz();
+char* descompressaoPred (char* nomeArquivo); //função geral que aplica as etapas de descompressão preditiva
+float** inversoPredicao(float** matrizResiduo);//Faz a operação inversa do q foi feito na etapa de predição
+
 
 static const unsigned char s_jo_ZigZag[] = { 0,1,5,6,14,15,27,28,2,4,7,13,16,26,29,42,3,8,12,17,25,30,41,43,9,11,18,24,31,40,44,53,10,19,23,32,39,45,52,54,20,22,33,38,46,51,55,60,21,34,37,47,50,56,59,61,35,36,48,49,57,58,62,63 };
 
@@ -352,34 +355,28 @@ bool jo_write_jpg(const char *filename, const void *data, int width, int height,
 
 #endif
 
-char* cod_pred (char* nomeArquivo){
+char* compressaoPred (char* nomeArquivo){
 		int i,j;
 		char* matrizResiduoChar;
-		float** matrizImagem;
-		float** matrizTransformada;
+		float** matrizOriginal;
+		float** matrizPredita;
 		float** matrizResiduo = criaMatriz();
 
-		matrizImagem = geraMatriz(nomeArquivo);
-		matrizTransformada = transformaMatriz(matrizImagem);
-		//Cria Matriz resíduo
+		matrizOriginal = geraMatriz(nomeArquivo);
+		matrizPredita = predizMatriz(matrizOriginal);
 
-		for(j = 0; j < COLUNAS; j++) matrizResiduo[0][j] = matrizTransformada[0][j]; //primeira linha e coluna se mantêm
-		for(i = 0; i < LINHAS; i++)  matrizResiduo[i][0] = matrizTransformada[i][0];
+		/*Cria Matriz resíduo
+		Primeira linha e coluna se mantêm*/
+		for(j = 0; j < COLUNAS; j++) matrizResiduo[0][j] = matrizPredita[0][j]; 
+		for(i = 0; i < LINHAS; i++)  matrizResiduo[i][0] = matrizPredita[i][0];
 
 		for(i = 1; i < LINHAS; i++){
 			for(j = 1; j < COLUNAS; j++){
-				matrizResiduo[i][j] = matrizImagem[i][j] - matrizTransformada[i][j];
+				matrizResiduo[i][j] = matrizOriginal[i][j] - matrizPredita[i][j];
 			}
 		}
 
-		/*for(i=0; i<LINHAS; i++){
-			for(j=0; j<COLUNAS; j++){
-				cout << matrizResiduo[i][j] << " ";
-			}
-			cout << "\n";
-		}*/
-
-		matrizResiduoChar = geraArquivoComprimido(matrizResiduo);
+		matrizResiduoChar = geraArquivoComprimido(matrizResiduo, (char*) "saida.raw");
 
 		return matrizResiduoChar;
 
@@ -390,21 +387,15 @@ float** geraMatriz (char* nomeArquivo){
 	ifstream streamArquivo(nomeArquivo, ios::in | ios::binary); //usando ios::in e ios::binary garante que nenhum dado do arquivo de entrada seja perdido
 
 	unsigned char ch;
-	float** matrizImagem; //construtor para a matriz
+	float** matriz; //construtor para a matriz
 	int i = 0, j = 0;
 
-	/*matrizImagem = new float*[LINHAS]; //aloca a matriz da imagem de acordo com o tamanho de linhas/colunas
-	for(i=0; i<LINHAS; i++){
-		matrizImagem[i] = new float[COLUNAS];
-		//printf("alocou linha %d\n", i);
-	}*/
-	matrizImagem = criaMatriz();
+	matriz = criaMatriz();
 
 	i = 0;
 
 	while (streamArquivo >> ch){
-			//cout << (float)ch << " "; DEBUG PARA VER O QUE ESTÁ SALVANDO NA MATRIZ
-			matrizImagem[i][j] = (float) ch;
+			matriz[i][j] = (float) ch;
 			j++; //incrementa coluna
 			if(j%COLUNAS == 0){
 				i++; //se acabou as colunas, incrementa linha
@@ -412,79 +403,63 @@ float** geraMatriz (char* nomeArquivo){
 			}
 	}
 
-	/*DEBUG PARA IMPRIMIR A MATRIZ
-	for(i=0; i<LINHAS; i++){
-		for(j=0; j<COLUNAS; j++){
-			cout << matrizImagem[i][j] << " ";
-		}
-		cout << "\n";
-	}*/
-
 	streamArquivo.close();
-	return matrizImagem;
-
+	
+	return matriz;
 }
 
 float** criaMatriz(){
 	float** matriz;
 	int i;
 
-	matriz = new float*[LINHAS]; //Aloca a matriz da imagem de acordo com o tamanho de linahs/colunas
+	matriz = new float*[LINHAS]; //Aloca a matriz da imagem de acordo com o tamanho de linhas/colunas
+
 	for(i = 0; i < LINHAS; i++){
 		matriz[i] = new float[COLUNAS];
-		//printf("Alocou linha %d\n", i);
 	}
 
 	return matriz;
 }
 
-float** transformaMatriz(float** matrizImagem){
+float** predizMatriz(float** matriz){
 	//Implementado o modo 4 (diag/right)
 	int i, j;
 	float calculo_predicao = 0;
-	float** matrizTransformada = criaMatriz();
+	float** matrizPredita = criaMatriz();
 
 	//Inicializa a matriz transformada com os valores que não serão alterados
-	for(j = 0; j < COLUNAS; j++) matrizTransformada[0][j] = matrizImagem[0][j];
-	for(i = 0; i < LINHAS; i++)	matrizTransformada[i][0] = matrizImagem[i][0];
+	for(j = 0; j < COLUNAS; j++) matrizPredita[0][j] = matriz[0][j];
+	for(i = 0; i < LINHAS; i++)	matrizPredita[i][0] = matriz[i][0];
 
 	//Começa em 1 porque a linha zero não deve ser modificada
 	for (i = 1; i < LINHAS; i++){
 		//Começa em 1 porque a coluna 0 não deve ser modificada
 		for(j = 1; j < LINHAS; j++){
-			calculo_predicao = matrizImagem[i-1][j-1]*0.5 + matrizImagem[i-1][j]*0.25 + matrizImagem[i][j-1]*0.25;
-			matrizTransformada[i][j] = calculo_predicao;
+			calculo_predicao = (1.4 * matriz[i-1][j-1] + 1.8 * matriz[i-1][j] +  1.8 * matriz[i][j-1])/3;
+			matrizPredita[i][j] = calculo_predicao;
 		}
 	}
-	/*DEBUG PARA IMPRIMIR A MATRIZ
-	for(i=0; i<LINHAS; i++){
-		for(j=0; j<COLUNAS; j++){
-			cout << matrizTransformada[i][j] << " ";
-		}
-		cout << "\n";
-	}*/
-	return matrizTransformada;
+
+	return matrizPredita;
 }
 
-char* geraArquivoComprimido(float** matrizResiduo){
+char* geraArquivoComprimido(float** matrizResiduo, char* nomeArquivoSaida){
 
 	unsigned int caractere;
 	char* matrizResiduoChar = new char[LINHAS*COLUNAS];
 	int i, j, k = 0;
 
-	ofstream arquivoSaida ("saida.raw", ios::out | ios::binary);
+	ofstream arquivoSaida (nomeArquivoSaida, ios::out | ios::binary);
 
 	for(i=0; i<LINHAS; i++){
 		for(j=0; j<COLUNAS; j++){
 			caractere = static_cast<unsigned int>(matrizResiduo[i][j]); //transforma os float em unsigned int para gravar no .raw
-			caractere = caractere + 128;
+			caractere = caractere;
 			arquivoSaida.write ((char*)&caractere, sizeof (char));
 			matrizResiduoChar[k] = (char) caractere;
 			k++;
 		}
 	}
-
-	//printf("valor final de k: %d\n", k);
 
 	arquivoSaida.close();
 
@@ -492,8 +467,70 @@ char* geraArquivoComprimido(float** matrizResiduo){
 
 }
 
-int main(){
-	char *dados; //matriz de resíduos em forma de caractere, para poder usar a função jo_write_jpg
-    	dados = cod_pred((char*)"lena.raw"); //dá warning se não passar com (char*)
-	jo_write_jpg((char*)"saida.jpg", dados, LINHAS, COLUNAS, 1, 90);
+char* descompressaoPred(char* nomeArquivo){
+	int i, j;
+	float** matrizResiduo;
+	float** matrizPredita;
+	float** matrizOriginal = criaMatriz();
+	char* matrizOriginalChar;
+
+	matrizResiduo = geraMatriz(nomeArquivo);
+	matrizPredita = predizMatriz(matrizResiduo); 
+
+	/*Cria Matriz original
+	Primeira linha e coluna se mantêm*/
+	for(j = 0; j < COLUNAS; j++) matrizOriginal[0][j] = matrizPredita[0][j]; 
+	for(i = 0; i < LINHAS; i++)  matrizOriginal[i][0] = matrizPredita[i][0];
+
+	for(i = 1; i < LINHAS; i++){
+		for(j = 1; j < COLUNAS; j++){
+			matrizOriginal[i][j] = matrizResiduo[i][j] + matrizPredita[i][j];
+		}
+	}	
+	
+	matrizOriginalChar = geraArquivoComprimido(matrizOriginal, (char*) "descompressao.raw");
+
+	return matrizOriginalChar;
+
+}
+
+int main(int argc, char *argv[]){
+	/*Linha de comando do argv -> ./programa modo arquivo.raw largura altura
+	O modo pode ser c para compressao e d para descompressão
+	Largura e altura são opcionais, o valor default é 512*/
+	char* dados; //matriz de resíduos em forma de caractere, para poder usar a função jo_write_jpg
+	char* arquivo;
+	char* modo;
+
+	if(argc == 5){
+		LINHAS = atoi(argv[3]);
+		COLUNAS = atoi(argv[4]);
+	}
+	else if (argc == 3){
+		LINHAS = 512;
+		COLUNAS = 512;
+	}
+	else{
+		cout << "Falta dados na linha de comando, ela deve ser escrita assim:" << "\n";
+		cout << "./programa modo arquivo.raw largura altura \n Sendo modo = c para compressão e modo = d para descompressão, e largura e altura valores opcionais pois o valor default é: 512x512\n";
+		return 0;
+	}
+	//Verifica o Modo (c ou d)
+	modo = argv[1];
+	arquivo = argv[2];
+
+	if(modo[0] != 'c' && modo[0] != 'd'){
+		cout << "Modo de abertura inexistente.\n";
+		return 0;
+	}
+	if(modo[0] == 'c'){
+		dados = compressaoPred((char*) arquivo);
+		jo_write_jpg((char*) "compressao.jpg", dados, LINHAS, COLUNAS, 1, 90);
+	}
+	else{
+		dados = descompressaoPred((char*) arquivo);
+		jo_write_jpg((char*) "descompressao.jpg", dados, LINHAS, COLUNAS, 1, 90);
+	}
+
+	return 0;
 }
