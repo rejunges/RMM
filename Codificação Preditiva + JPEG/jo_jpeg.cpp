@@ -58,8 +58,6 @@ float** predizMatriz (float** matriz); //faz a transformação/técnica preditiv
 char* geraArquivoComprimido(float** matrizResiduo, char* nomeArquivoSaida); //gera o .raw comprimido
 float** criaMatriz();
 char* descompressaoPred (char* nomeArquivo); //função geral que aplica as etapas de descompressão preditiva
-float** inversoPredicao(float** matrizResiduo);//Faz a operação inversa do q foi feito na etapa de predição
-
 
 static const unsigned char s_jo_ZigZag[] = { 0,1,5,6,14,15,27,28,2,4,7,13,16,26,29,42,3,8,12,17,25,30,41,43,9,11,18,24,31,40,44,53,10,19,23,32,39,45,52,54,20,22,33,38,46,51,55,60,21,34,37,47,50,56,59,61,35,36,48,49,57,58,62,63 };
 
@@ -367,7 +365,7 @@ char* compressaoPred (char* nomeArquivo){
 
 		/*Cria Matriz resíduo
 		Primeira linha e coluna se mantêm*/
-		for(j = 0; j < COLUNAS; j++) matrizResiduo[0][j] = matrizPredita[0][j]; 
+		for(j = 0; j < COLUNAS; j++) matrizResiduo[0][j] = matrizPredita[0][j];
 		for(i = 0; i < LINHAS; i++)  matrizResiduo[i][0] = matrizPredita[i][0];
 
 		for(i = 1; i < LINHAS; i++){
@@ -376,7 +374,7 @@ char* compressaoPred (char* nomeArquivo){
 			}
 		}
 
-		matrizResiduoChar = geraArquivoComprimido(matrizResiduo, (char*) "saida.raw");
+		matrizResiduoChar = geraArquivoComprimido(matrizResiduo, (char*) "compressao.raw");
 
 		return matrizResiduoChar;
 
@@ -404,7 +402,7 @@ float** geraMatriz (char* nomeArquivo){
 	}
 
 	streamArquivo.close();
-	
+
 	return matriz;
 }
 
@@ -422,12 +420,12 @@ float** criaMatriz(){
 }
 
 float** predizMatriz(float** matriz){
-	//Implementado o modo 4 (diag/right)
+	//Implementado o modo 4 (diag/right) com normalização
 	int i, j;
 	float calculo_predicao = 0;
 	float** matrizPredita = criaMatriz();
 
-	//Inicializa a matriz transformada com os valores que não serão alterados
+	//Inicializa a matriz predita com os valores que não serão alterados
 	for(j = 0; j < COLUNAS; j++) matrizPredita[0][j] = matriz[0][j];
 	for(i = 0; i < LINHAS; i++)	matrizPredita[i][0] = matriz[i][0];
 
@@ -454,7 +452,6 @@ char* geraArquivoComprimido(float** matrizResiduo, char* nomeArquivoSaida){
 	for(i=0; i<LINHAS; i++){
 		for(j=0; j<COLUNAS; j++){
 			caractere = static_cast<unsigned int>(matrizResiduo[i][j]); //transforma os float em unsigned int para gravar no .raw
-			caractere = caractere;
 			arquivoSaida.write ((char*)&caractere, sizeof (char));
 			matrizResiduoChar[k] = (char) caractere;
 			k++;
@@ -475,19 +472,19 @@ char* descompressaoPred(char* nomeArquivo){
 	char* matrizOriginalChar;
 
 	matrizResiduo = geraMatriz(nomeArquivo);
-	matrizPredita = predizMatriz(matrizResiduo); 
+	matrizPredita = predizMatriz(matrizResiduo);
 
 	/*Cria Matriz original
 	Primeira linha e coluna se mantêm*/
-	for(j = 0; j < COLUNAS; j++) matrizOriginal[0][j] = matrizPredita[0][j]; 
+	for(j = 0; j < COLUNAS; j++) matrizOriginal[0][j] = matrizPredita[0][j];
 	for(i = 0; i < LINHAS; i++)  matrizOriginal[i][0] = matrizPredita[i][0];
 
 	for(i = 1; i < LINHAS; i++){
 		for(j = 1; j < COLUNAS; j++){
-			matrizOriginal[i][j] = matrizResiduo[i][j] + matrizPredita[i][j];
+			matrizOriginal[i][j] = (matrizResiduo[i][j] + matrizPredita[i][j])/2.7; //divide por 2,7 para normalizar os valores
 		}
-	}	
-	
+	}
+
 	matrizOriginalChar = geraArquivoComprimido(matrizOriginal, (char*) "descompressao.raw");
 
 	return matrizOriginalChar;
@@ -523,11 +520,11 @@ int main(int argc, char *argv[]){
 		cout << "Modo de abertura inexistente.\n";
 		return 0;
 	}
-	if(modo[0] == 'c'){
+	if(modo[0] == 'c'){ //COMPRESSÃO
 		dados = compressaoPred((char*) arquivo);
 		jo_write_jpg((char*) "compressao.jpg", dados, LINHAS, COLUNAS, 1, 90);
 	}
-	else{
+	else{ //DECOMPRESSÃO
 		dados = descompressaoPred((char*) arquivo);
 		jo_write_jpg((char*) "descompressao.jpg", dados, LINHAS, COLUNAS, 1, 90);
 	}
